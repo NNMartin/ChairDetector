@@ -1,7 +1,9 @@
 import sqlite3 as sql
 
+
 def sqlfstr(s):
     return s.replace('"', '""')
+
 
 def open_conn(db_name = "chairs.db"):
     """
@@ -12,7 +14,8 @@ def open_conn(db_name = "chairs.db"):
     c = conn.cursor()
     return c, conn
 
-def init_db(db = "chairs.db", table_name = "chairs"):
+
+def init_db(db="chairs.db", table_name="chairs"):
     """
     Include Try, Except to catch already created db errors.
     """
@@ -28,8 +31,7 @@ def init_db(db = "chairs.db", table_name = "chairs"):
     conn.close()
 
 
-
-def insert(db_conn, item_dict, item_names, table = "chairs"):
+def insert(db_conn, item_dict, item_names, table="chairs"):
     """
     Inserts the Week object, <data>, into the expenses database. <data> is a
     single week's worth of data regarding expenses.
@@ -40,6 +42,11 @@ def insert(db_conn, item_dict, item_names, table = "chairs"):
             "INSERT INTO {table} VALUES {item_names}"\
             .format(table = sqlfstr(table), item_names = sqlfstr(item_names)), item_dict
             )
+
+def close_db(db_conn):
+    c, conn = db_conn
+    conn.close()
+
 
 def is_in_db(db_conn, item, var, db = "chairs"):
     c, _ = db_conn
