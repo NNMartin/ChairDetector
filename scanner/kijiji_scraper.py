@@ -34,7 +34,12 @@ class KijijiAd(dict):
 
 
 class KijijiScraper:
+    """
+    Uses BrowserConnection object to interact with Kijiji website and scrape
+    data.
+    """
     def __init__(self, db, model_path, max_price, folder, thresh, num_ads):
+        assert num_ads < 47, "Currently the number of ads is capped at 46."
         self.db = chair_sqlite.open_conn(db_name=db)  # tuple
         self.max_price = max_price
         self.model_path = model_path
@@ -100,8 +105,10 @@ class KijijiScraper:
         conn = self.init_browser_conn(**browser_dict)
         conn.get_url(url)
         for i in range(1, self.num_ads):
-            conn.click_ad(conn.get_ads(self.num_ads, i))
-            self.scrape_ad(conn, model)
+            if conn.click_ad(conn.get_ads(self.num_ads, i)):
+                self.scrape_ad(conn, model)
+            else:
+                break
         self._quit_browser(conn)
         self._close_db()
         return self.notifs
@@ -121,7 +128,7 @@ if __name__ == "__main__":
     folder = "/Users/nicholas/Documents/Experimentation/chairDetector/scanner/data"
     model_path = "/Users/nicholas/Documents/Experimentation/chairDetector/detector/model.pt"
     db = "chairs.db"
-    num_ads = 10
+    num_ads = 10  # less than 47
     price = 500
     driver_loc = '/Users/nicholas/chromedriver'
     thresh = 0.7

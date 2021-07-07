@@ -3,14 +3,26 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import ElementNotInteractableException
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import time
 
 
 class BrowserConnection:
+    """
+    Object that interacts with web browser using Selenium.
+    """
     def __init__(self, driver_loc, timeout, wait, headless=False):
+        """
+        Initializes BrowserConnection object.\
+
+        driver_loc: str. Path to webdriver.
+        timeout: int. Maximum allotted time for Selenium methods before raising
+            TimeoutException
+        wait: int. Amount of time BrowserConnection waits between attempting to find elements.
+        headless: bool. Whether the browser should be headless or not.
+        """
         if headless:
             options = Options()
             options.headless = True
@@ -22,7 +34,7 @@ class BrowserConnection:
         self.by = {
             "xpath": By.XPATH,
             "class_name": By.CLASS_NAME,
-            "link text": By.LINK_TEXT
+            "link text": By.LINK_TEXT,
             }
         self.ads_loc = "clearfix"  # class name
         self.id_loc = '//*[@id="ViewItemPage"]/div[3]/div/ul/li[7]/a'
@@ -31,17 +43,43 @@ class BrowserConnection:
         self.images_loc = "image-376491912"  # class name
 
     def go_back_n_pages(self, n=1):
+        """
+        Webdriver goes back <n> pages.
+
+        n: int
+        returns: None
+        """
+        assert n > 0 and isinstance(n, int), "n must be a positive integer"
         self.driver.execute_script("window.history.go(-{})".format(n))
         self.driver.implicitly_wait(self.timeout)
 
     def get_url(self, url):
+        """
+        Selenium webdriver retrieves the <url> and implicitly waits for the
+        page to load.
+
+        url: str
+        returns: None
+        """
         self.driver.get(url)
         self.driver.implicitly_wait(self.timeout)
 
     def quit_conn(self):
+        """
+        Quits the browser connection
+
+        returns: None
+        """
         self.driver.quit()
 
     def get_ads(self, num_ads, ind):
+        """
+        Waits for the webdriver to find at least <num_ads> ads and then
+        returns the ad located at the index <ind>.
+
+        num_ads: int
+        returns: Selenium.webdriver.WebElement
+        """
         total = 0
         ads = self.driver.find_elements_by_class_name(self.ads_loc)
         while len(ads) < num_ads:
@@ -51,10 +89,15 @@ class BrowserConnection:
                 raise TimeoutException
             ads = self.driver.find_elements_by_class_name(self.ads_loc)
         return ads[ind]
-        # ads = self.wait_for_page(self.ads_loc, "class_name", singular=False)
-        # return len(ads), ads[ind]
 
     def get_price(self):
+        """
+        Returns the ad price found in the location, self.price_loc, by an xpath
+        search if the price exists. If the price cannot be located, returns
+        None.
+
+        returns: None or float
+        """
         try:
             price_element = self.wait_for_page(self.price_loc, "xpath")
         except TimeoutException:
@@ -65,17 +108,23 @@ class BrowserConnection:
     def wait_until_clickable(self, by, loc):
         cond = ec.element_to_be_clickable((self.by[by], loc))
         return WebDriverWait(
-            self.driver, self.timeout, ignored_exceptions=self.ignored_exceptions
+            self.driver,
+            self.timeout,
+            ignored_exceptions=self.ignored_exceptions
             ).until(cond)
 
     def click_ad(self, ad_element):
         total = 0
-        while not ad_element.is_enabled():
-            time.sleep(self.wait)
-            total += self.wait
-            if total > self.timeout:
-                raise TimeoutException
-        ad_element.click()
+        try:
+            while not ad_element.is_enabled():
+                time.sleep(self.wait)
+                total += self.wait
+                if total > self.timeout:
+                    raise TimeoutException
+            ad_element.click()
+            return True
+        except StaleElementReferenceException:
+            return False
         # ad_title = ad_element.find_element_by_class_name("title")
         # ad_link = ad_title.find_element_by_tag_name("a").get_attribute("href")
         # self.wait_for_page(ad_link, "link text")  # wait until page loads
@@ -87,13 +136,25 @@ class BrowserConnection:
         gallery.click()
 
     def wait_for_page(self, loc, by, singular=True):
+        """
+        Returns the selenium.webdriver.WebElement found at the location <loc>
+        using the key <by> associated to one of the methods found in
+        selenium.webdriver.common.by. When searching for the WebElement, waits
+        for the element to not be stale.
+
+        by: str
+        loc: str
+        returns: Selenium.webdriver.WebElement
+        """
         if singular:
             locator = ec.presence_of_element_located
         else:
             locator = ec.presence_of_all_elements_located
         element = WebDriverWait(
-            self.driver, self.timeout, ignored_exceptions=self.ignored_exceptions
-        ).until(locator((self.by[by], loc)))
+            self.driver,
+            self.timeout,
+            ignored_exceptions=self.ignored_exceptions
+            ).until(locator((self.by[by], loc)))
         return element
 
     def get_id(self):
