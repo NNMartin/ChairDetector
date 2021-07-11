@@ -70,7 +70,8 @@ def insert(db_conn, item_dict, item_names, table="chairs"):
     with conn:
         c.execute(
             "INSERT INTO {table} VALUES {item_names}"\
-            .format(table=sqlfstr(table), item_names=sqlfstr(item_names)), item_dict
+            .format(table=sqlfstr(table), item_names=sqlfstr(item_names)),
+            item_dict
             )
 
 
@@ -105,6 +106,6 @@ def table_to_df(col_names, table="chairs"):
     """
     c, conn = open_conn()
     with conn:
-        data = c.execute(" SELECT * FROM {table}".format(table=sqlfstr(table)))  # retrieve all data
+        data = c.execute(" SELECT * FROM {table}".format(table=sqlfstr(table)))
         data = pd.DataFrame(data.fetchall(), columns=col_names)
     return data

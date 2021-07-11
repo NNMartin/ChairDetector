@@ -64,7 +64,7 @@ class KijijiScraper:
         ad.insert_into_db(self.db)
 
     def _close_db(self):
-        chair_sqlite.close_db(self.db)
+        chair_sqlite.close_conn(self.db)
 
     def _quit_browser(self, conn):
         conn.quit_conn()
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     folder = "/Users/nicholas/Documents/Experimentation/chairDetector/scanner/data"
     model_path = "/Users/nicholas/Documents/Experimentation/chairDetector/detector/model.pt"
     db = "chairs.db"
-    num_ads = 10  # less than 47
+    num_ads = 3  # less than 47
     price = 500
     driver_loc = '/Users/nicholas/chromedriver'
     thresh = 0.7

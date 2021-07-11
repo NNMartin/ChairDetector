@@ -13,9 +13,9 @@ class BrowserConnection:
     """
     Object that interacts with web browser using Selenium.
     """
-    def __init__(self, driver_loc, timeout, wait, headless=False):
+    def __init__(self, driver_loc, timeout, wait, headless=True):
         """
-        Initializes BrowserConnection object.\
+        Initializes BrowserConnection object.
 
         driver_loc: str. Path to webdriver.
         timeout: int. Maximum allotted time for Selenium methods before raising
@@ -26,8 +26,9 @@ class BrowserConnection:
         if headless:
             options = Options()
             options.headless = True
-        # self.driver = webdriver.Chrome(driver_loc, options = options)
-        self.driver = webdriver.Chrome(driver_loc)
+        else:
+            options = None
+        self.driver = webdriver.Chrome(driver_loc, options=options)
         self.ignored_exceptions = (StaleElementReferenceException,)
         self.timeout = timeout
         self.wait = wait
@@ -49,9 +50,11 @@ class BrowserConnection:
         n: int
         returns: None
         """
-        assert n > 0 and isinstance(n, int), "n must be a positive integer"
+        assert isinstance(n, int) and n > 0, "n must be a positive integer"
         self.driver.execute_script("window.history.go(-{})".format(n))
-        self.driver.implicitly_wait(self.timeout)
+
+    def get_current_url(self):
+        return self.driver.current_url
 
     def get_url(self, url):
         """
@@ -70,6 +73,7 @@ class BrowserConnection:
 
         returns: None
         """
+        self.driver.delete_all_cookies()
         self.driver.quit()
 
     def get_ads(self, num_ads, ind):
