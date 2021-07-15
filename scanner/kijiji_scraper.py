@@ -51,8 +51,8 @@ class KijijiScraper:
     def _init_model(self):
         return classify.init_model(self.model_path)
 
-    def init_browser_conn(self, driver_loc, timeout, wait):
-        return browserconn.BrowserConnection(driver_loc, timeout, wait)
+    def init_browser_conn(self, driver_loc, timeout):
+        return browserconn.BrowserConnection(driver_loc, timeout)
 
     def new_id(self, ad_id):
         """ check if ad_id is in the database"""
@@ -120,28 +120,15 @@ def current_time():
 
 if __name__ == "__main__":
     url = "https://www.kijiji.ca/b-chair-recliner/city-of-toronto/c245l1700273?ad=offering"  # Main starting point
-    id_xpath = '//*[@id="ViewItemPage"]/div[3]/div/ul/li[7]/a'
-    images_class_name = "image-376491912"
-    gallery_xpath = '//*[@id="mainHeroImage"]/div[2]'
-    price_xpath = '//*[@id="ViewItemPage"]/div[5]/div[1]/div[1]/div/div/span/span[1]'
-    html_class_name = "clearfix"
     folder = "/Users/nicholas/Documents/Experimentation/chairDetector/scanner/data"
     model_path = "/Users/nicholas/Documents/Experimentation/chairDetector/detector/model.pt"
     db = "chairs.db"
-    num_ads = 3  # less than 47
+    num_ads = 20  # less than 47
     price = 500
     driver_loc = '/Users/nicholas/chromedriver'
     thresh = 0.7
     timeout = 30
-    wait = 1
 
-    # browser_dict = {
-    #     "ads_loc": html_class_name,
-    #     "id_loc": id_xpath,
-    #     "price_loc": price_xpath,
-    #     "gallery_loc": gallery_xpath,
-    #     "images_loc": images_class_name}
-    # = browserconn.BrowserConnection(**web_dict)
-    browser_dict = {"driver_loc": driver_loc, "timeout": timeout, "wait": wait}
+    browser_dict = {"driver_loc": driver_loc, "timeout": timeout}
     scraper = KijijiScraper(db, model_path, price, folder, thresh, num_ads)
     scraper.scrape_ads(url, browser_dict)

@@ -13,7 +13,7 @@ class BrowserConnection:
     """
     Object that interacts with web browser using Selenium.
     """
-    def __init__(self, driver_loc, timeout, wait, headless=True):
+    def __init__(self, driver_loc, timeout, headless=False):
         """
         Initializes BrowserConnection object.
 
@@ -31,7 +31,7 @@ class BrowserConnection:
         self.driver = webdriver.Chrome(driver_loc, options=options)
         self.ignored_exceptions = (StaleElementReferenceException,)
         self.timeout = timeout
-        self.wait = wait
+        self.wait = 1
         self.by = {
             "xpath": By.XPATH,
             "class_name": By.CLASS_NAME,
@@ -129,11 +129,6 @@ class BrowserConnection:
             return True
         except StaleElementReferenceException:
             return False
-        # ad_title = ad_element.find_element_by_class_name("title")
-        # ad_link = ad_title.find_element_by_tag_name("a").get_attribute("href")
-        # self.wait_for_page(ad_link, "link text")  # wait until page loads
-        # clickable_ad = self.wait_until_clickable("link text", ad_link)
-        # clickable_ad.click()
 
     def click_gallery(self):
         gallery = self.wait_for_page(self.gallery_loc, "xpath")
@@ -171,13 +166,8 @@ class BrowserConnection:
     def get_images(self):
         try:
             self.click_gallery()
+            return self.wait_for_page(
+                self.images_loc, "class_name", singular=False
+            )
         except (ElementNotInteractableException, TimeoutException):
             return None
-        try:
-            images = self.wait_for_page(
-                self.images_loc, "class_name", singular=False
-                )
-        except TimeoutException:
-            return None
-        for image in images:
-            yield image

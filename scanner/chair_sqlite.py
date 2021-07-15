@@ -88,8 +88,10 @@ def is_in_db(db_conn, item, var, table="chairs"):
     """
     c, _ = db_conn
     c.execute(
-        "SELECT * FROM {} WHERE :var = :item".format(sqlfstr(table)),
-        {"var": var, "item": item}
+        "SELECT {} FROM {} WHERE {}=?".format(
+            sqlfstr(var), sqlfstr(table), sqlfstr(var)
+            ),
+        (item,)
         )
     result = c.fetchone()
     return result is not None
