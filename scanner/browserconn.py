@@ -13,7 +13,7 @@ class BrowserConnection:
     """
     Object that interacts with web browser using Selenium.
     """
-    def __init__(self, driver_loc, timeout, headless=False):
+    def __init__(self, driver_loc, timeout, headless=True):
         """
         Initializes BrowserConnection object.
 
@@ -34,14 +34,15 @@ class BrowserConnection:
         self.wait = 1
         self.by = {
             "xpath": By.XPATH,
-            "class_name": By.CLASS_NAME,
+            "class name": By.CLASS_NAME,
             "link text": By.LINK_TEXT,
+            "css selector": By.CSS_SELECTOR
             }
         self.ads_loc = "clearfix"  # class name
         self.id_loc = '//*[@id="ViewItemPage"]/div[3]/div/ul/li[7]/a'
         self.price_loc = '//*[@id="ViewItemPage"]/div[5]/div[1]/div[1]/div/div/span/span[1]'
         self.gallery_loc = '//*[@id="mainHeroImage"]/div[2]'
-        self.images_loc = "image-376491912"  # class name
+        self.images_loc = '[alt="carousel thumbnail"]'  # css selector
 
     def go_back_n_pages(self, n=1):
         """
@@ -149,12 +150,11 @@ class BrowserConnection:
             locator = ec.presence_of_element_located
         else:
             locator = ec.presence_of_all_elements_located
-        element = WebDriverWait(
+        return WebDriverWait(
             self.driver,
             self.timeout,
             ignored_exceptions=self.ignored_exceptions
             ).until(locator((self.by[by], loc)))
-        return element
 
     def get_id(self):
         try:
@@ -166,8 +166,10 @@ class BrowserConnection:
     def get_images(self):
         try:
             self.click_gallery()
-            return self.wait_for_page(
-                self.images_loc, "class_name", singular=False
+            images = self.wait_for_page(
+                self.images_loc, "css selector", singular=False
             )
+            for image in images:
+                yield image
         except (ElementNotInteractableException, TimeoutException):
             return None

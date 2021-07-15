@@ -1,7 +1,6 @@
 from pynotifier import Notification
 from kijiji_scraper import KijijiScraper
 import time
-import warnings
 
 
 def notify(repeat, unique_ids=set(), wait=300, iter=0):
@@ -38,7 +37,6 @@ def notify(repeat, unique_ids=set(), wait=300, iter=0):
 
 
 if __name__ == '__main__':
-    warnings.filterwarnings("ignore")
     notify(5)
 
 

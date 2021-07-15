@@ -51,7 +51,8 @@ class KijijiScraper:
     def _init_model(self):
         return classify.init_model(self.model_path)
 
-    def init_browser_conn(self, driver_loc, timeout):
+    @staticmethod
+    def init_browser_conn(driver_loc, timeout):
         return browserconn.BrowserConnection(driver_loc, timeout)
 
     def new_id(self, ad_id):
@@ -66,20 +67,18 @@ class KijijiScraper:
     def _close_db(self):
         chair_sqlite.close_conn(self.db)
 
-    def _quit_browser(self, conn):
+    @staticmethod
+    def _quit_browser(conn):
         conn.quit_conn()
 
     def scrape_images(self, conn, time, model):
         images = conn.get_images()
-        if images is None:
-            return None
-        else:
-            names, predictions = [], []
-            for i, image in enumerate(images):
-                name = "{}/{}_{}.png".format(self.folder, time, str(i))
-                names.append(name)
-                predictions.append(classify.hm_prob(image, name, model))
-            return names, predictions
+        names, predictions = [], []
+        for i, image in enumerate(images):
+            name = "{}/{}_{}.png".format(self.folder, time, str(i))
+            names.append(name)
+            predictions.append(classify.hm_prob(image, name, model))
+        return names, predictions
 
     def scrape_ad(self, conn, model):
         ad_dict = {"id": conn.get_id()}
@@ -90,10 +89,10 @@ class KijijiScraper:
         if ad_dict["price"] is None:
             conn.go_back_n_pages()
             return None
-        ad_dict["time"] = current_time()
-        scraped_data = self.scrape_images(conn, ad_dict["time"], model)
-        if scraped_data is not None:
-            ad_dict["names"], ad_dict["probs"] = scraped_data
+        ad_dict["time"] = KijijiScraper.current_time()
+        names, probs = self.scrape_images(conn, ad_dict["time"], model)
+        if len(names) > 0:
+            ad_dict["names"], ad_dict["probs"] = names, probs
             ad = KijijiAd(**ad_dict)
             if ad.has_hm(self.thresh) and ad.price <= self.max_price:
                 self.notifs.append((ad.id, ad.price))
@@ -102,20 +101,20 @@ class KijijiScraper:
 
     def scrape_ads(self, url, browser_dict):
         model = self._init_model()
-        conn = self.init_browser_conn(**browser_dict)
+        conn = KijijiScraper.init_browser_conn(**browser_dict)
         conn.get_url(url)
         for i in range(1, self.num_ads):
             if conn.click_ad(conn.get_ads(self.num_ads, i)):
                 self.scrape_ad(conn, model)
             else:
                 break
-        self._quit_browser(conn)
+        KijijiScraper._quit_browser(conn)
         self._close_db()
         return self.notifs
 
-
-def current_time():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    @staticmethod
+    def current_time():
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 if __name__ == "__main__":
