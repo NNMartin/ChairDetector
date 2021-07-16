@@ -104,7 +104,7 @@ class KijijiScraper:
         conn = KijijiScraper.init_browser_conn(**browser_dict)
         conn.get_url(url)
         for i in range(1, self.num_ads):
-            if conn.click_ad(conn.get_ads(self.num_ads, i)):
+            if conn.click_ad(conn.get_ith_ad(self.num_ads, i)):
                 self.scrape_ad(conn, model)
             else:
                 break
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     folder = "/Users/nicholas/Documents/Experimentation/chairDetector/scanner/data"
     model_path = "/Users/nicholas/Documents/Experimentation/chairDetector/detector/model.pt"
     db = "chairs.db"
-    num_ads = 20  # less than 47
+    num_ads = 10  # less than 47
     price = 500
     driver_loc = '/Users/nicholas/chromedriver'
     thresh = 0.7

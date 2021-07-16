@@ -1,5 +1,6 @@
 import torch
 from torchvision import transforms
+from torch.nn.functional import softmax
 from PIL import Image
 from urllib.request import urlopen
 
@@ -25,7 +26,7 @@ def process_image(image):
 def get_prob(model, image):
     mod_input = process_image(image)
     output = model(mod_input)
-    return torch.nn.functional.softmax(output[0], dim=0)[0].item()
+    return softmax(output[0], dim=0)[0].item()
 
 
 def hm_prob(image, image_name, model):

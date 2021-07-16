@@ -17,11 +17,30 @@ class BrowserConnection:
         """
         Initializes BrowserConnection object.
 
-        driver_loc: str. Path to webdriver.
-        timeout: int. Maximum allotted time for Selenium methods before raising
-            TimeoutException
-        wait: int. Amount of time BrowserConnection waits between attempting to find elements.
-        headless: bool. Whether the browser should be headless or not.
+        driver_loc - str: Path to webdriver.
+        timeout - int: Maximum allotted time for Selenium methods before
+            raising TimeoutException
+        wait - int: Amount of time BrowserConnection waits between attempting
+            to find elements.
+        headless - bool: Whether the browser should be headless or not.
+        driver - selenium.webdriver.WebDriver: The browser used to interact
+            with Kijiji
+        ignored_exceptions - tuple of Exceptions: Exceptions that are to be
+            ignored when searching for a WebElement.
+        by - dict: Dictionary of keys (str) that represent Selenium locator
+            methods, and corresponding values (selenium.webdriver.common.by)
+            that are the methods of location.
+        ads_loc - str: pattern used by find_element_by_class_name to search
+            for the WebElements containing the ads on the main results page to
+            click on.
+        id_loc - str: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad id.
+        price_loc - str: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad price.
+        gallery_loc: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad gallery.
+        gallery_loc: pattern used by find_element_by_css_selector to search for
+            the WebElements containing the ad images.
         """
         if headless:
             options = Options()
@@ -40,7 +59,9 @@ class BrowserConnection:
             }
         self.ads_loc = "clearfix"  # class name
         self.id_loc = '//*[@id="ViewItemPage"]/div[3]/div/ul/li[7]/a'
-        self.price_loc = '//*[@id="ViewItemPage"]/div[5]/div[1]/div[1]/div/div/span/span[1]'
+        self.price_loc = ('//*[@id="ViewItemPage"]/div[5]/div[1]/div[1]/div/'
+                          'div/span/span[1]'
+                          )
         self.gallery_loc = '//*[@id="mainHeroImage"]/div[2]'
         self.images_loc = '[alt="carousel thumbnail"]'  # css selector
 
@@ -48,13 +69,18 @@ class BrowserConnection:
         """
         Webdriver goes back <n> pages.
 
-        n: int
-        returns: None
+        n - int: The number of pages the browser goes back in history.
+        returns None
         """
         assert isinstance(n, int) and n > 0, "n must be a positive integer"
         self.driver.execute_script("window.history.go(-{})".format(n))
 
     def get_current_url(self):
+        """
+        Returns the current url of the browser.
+
+        returns str
+        """
         return self.driver.current_url
 
     def get_url(self, url):
@@ -62,28 +88,32 @@ class BrowserConnection:
         Selenium webdriver retrieves the <url> and implicitly waits for the
         page to load.
 
-        url: str
-        returns: None
+        url - str: website url for the browser to retrieve.
+        returns None
         """
         self.driver.get(url)
         self.driver.implicitly_wait(self.timeout)
 
     def quit_conn(self):
         """
-        Quits the browser connection
+        Quits the browser connection and deletes all cookies.
 
-        returns: None
+        returns None
         """
         self.driver.delete_all_cookies()
         self.driver.quit()
 
-    def get_ads(self, num_ads, ind):
+    def get_ith_ad(self, num_ads, ind):
         """
         Waits for the webdriver to find at least <num_ads> ads and then
-        returns the ad located at the index <ind>.
+        returns the ad located at the index <ind>. At the time of writing
+        this code Selenium doesn't offer a way to search for the ith
+        occurrence of a locator and so an entire list of all elements matching
+        the locator must be found on each call.
 
-        num_ads: int
-        returns: Selenium.webdriver.WebElement
+        num_ads - int (>0): Number of ads to scrape.
+        ind - int (>0): Index of a particular ad to scrape.
+        returns Selenium.webdriver.WebElement
         """
         total = 0
         ads = self.driver.find_elements_by_class_name(self.ads_loc)
@@ -98,10 +128,10 @@ class BrowserConnection:
     def get_price(self):
         """
         Returns the ad price found in the location, self.price_loc, by an xpath
-        search if the price exists. If the price cannot be located, returns
-        None.
+        search if the price exists. If the price cannot be located or is not a
+        number, returns None.
 
-        returns: None or float
+        returns None or float
         """
         try:
             price_element = self.wait_for_page(self.price_loc, "xpath")
@@ -110,15 +140,15 @@ class BrowserConnection:
         web_price = price_element.get_attribute("content")
         return None if web_price is None else float(web_price.replace("$", ""))
 
-    def wait_until_clickable(self, by, loc):
-        cond = ec.element_to_be_clickable((self.by[by], loc))
-        return WebDriverWait(
-            self.driver,
-            self.timeout,
-            ignored_exceptions=self.ignored_exceptions
-            ).until(cond)
-
     def click_ad(self, ad_element):
+        """
+        Waits for browser until <ad_element> is enabled and then clicks on the
+        element. Returns True if the <ad_element> is not a stale web element
+        and False otherwise.
+
+        ad_element - Selenium.webdriver.WebElement: Element to be clicked.
+        returns - bool
+        """
         total = 0
         try:
             while not ad_element.is_enabled():
@@ -132,6 +162,13 @@ class BrowserConnection:
             return False
 
     def click_gallery(self):
+        """
+        Clicks on the gallery of photos of a Kijiji ad webpage that the
+        webdriver is on. The images in the gallery can then be scraped using
+        additional functions.
+
+        returns None
+        """
         gallery = self.wait_for_page(self.gallery_loc, "xpath")
         gallery.click()
 
@@ -139,12 +176,14 @@ class BrowserConnection:
         """
         Returns the selenium.webdriver.WebElement found at the location <loc>
         using the key <by> associated to one of the methods found in
-        selenium.webdriver.common.by. When searching for the WebElement, waits
-        for the element to not be stale.
+        selenium.webdriver.common.by. When searching for the WebElement, the
+        function ignores exceptions found in <self.ignored_exceptions>.
 
-        by: str
-        loc: str
-        returns: Selenium.webdriver.WebElement
+        by - str: Must be one of the keys found in self.by. Denotes the
+            Selenium method of location.
+        loc - str: The pattern used by the locator to locate the WebElement of
+            interest.
+        returns Selenium.webdriver.WebElement
         """
         if singular:
             locator = ec.presence_of_element_located
@@ -157,6 +196,13 @@ class BrowserConnection:
             ).until(locator((self.by[by], loc)))
 
     def get_id(self):
+        """
+        Returns the ad id found by the pattern, self.id_loc, by an xpath
+        search. If the id cannot be found in a duration of time less than
+        self.timeout then returns None
+
+        returns None or int
+        """
         try:
             ad_id = self.wait_for_page(self.id_loc, "xpath")
             return int(ad_id.get_attribute("innerHTML"))
@@ -164,6 +210,12 @@ class BrowserConnection:
             return None
 
     def get_images(self):
+        """
+        Returns a generator of WebElements representing an ad's images. If
+        an Exception is raised, the generator returned is empty.
+
+        returns generator of WebElements
+        """
         try:
             self.click_gallery()
             images = self.wait_for_page(
