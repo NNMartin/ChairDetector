@@ -10,6 +10,7 @@ def init_model(model_path):
     Loads PyTorch neural net located at <model_path>, and sets the model to
     evaluation mode.
 
+    model_path - str: Global path to PyTorch model.
     returns torch.Module
     """
     model = torch.load(model_path, map_location=torch.device('cpu'))
@@ -23,8 +24,8 @@ def process_image(image):
     transforms are taken from the model webpage:
     https://pytorch.org/hub/pytorch_vision_resnext/
 
-    image - PIL Image: Image to be processed into torch.Tensor to be input into
-        a neural net.
+    image - PIL.Image: Image to be processed into torch.Tensor to be input into
+            a neural net.
     returns torch.Tensor
     """
     preprocess = transforms.Compose([
@@ -40,8 +41,7 @@ def process_image(image):
 
 def get_prob(model, image):
     """
-    Returns the probability of <image> being a Herman Miller chair. The
-    probability is calculated by the neural net <model>.
+    Returns the probability of <image>, calculated by the neural net <model>.
 
     model - torch.Module: Neural net used for image classification.
     image - PIL Image: Image to be classified
@@ -55,13 +55,13 @@ def get_prob(model, image):
 def hm_prob(image, image_name, model):
     """
     Downloads the image <image> with the global path name <image_name> and
-    returns the probability of that image being a Herman Miller chair, as
-    calculated by the neural net <model>
+    returns the probability of that image being a particular item, as
+    calculated by the neural net <model>.
 
     model - torch.Module: Neural net used for image classification.
     image - selenium.WebElement: Image to be downloaded and classified.
     image_name - str: Global file path used to name the image and store it
-        locally.
+            locally.
     returns float
     """
     src = image.get_attribute('src')

@@ -12,12 +12,12 @@ FOLDER = ("/Users/nicholas/Documents/Experimentation/chairDetector"
 MODEL_PATH = ("/Users/nicholas/Documents/Experimentation/chairDetector"
               "/detector/model.pt"
               )
-DB = "chairs.db"
+DB_NAME = "chairs.db"
 NUM_ADS = 10  # less than 47
 MAX_PRICE = 500
 DRIVER_LOC = '/Users/nicholas/chromedriver'
 PROB_THRESH = 0.7
-TIMEOUT = 30
+TIMEOUT = 30  # seconds
 
 
 def notify(repeat, wait=300):
@@ -29,17 +29,16 @@ def notify(repeat, wait=300):
     are greater than or equal to PROB_THRESH and whose listed price is less
     than or equal to MAX_PRICE.
 
-    repeat - int:
-    wait - int: The amount of time in seconds to wait between calls of
-        scrape_ads.
+    repeat - int (>0):
+    wait - int (>0): The amount of time in seconds to wait between calls of
+            scrape_ads.
     returns None
     """
-
     browser_dict = {"driver_loc": DRIVER_LOC, "timeout": TIMEOUT}
     unique_ids = set()
     for i in range(repeat):
         scraper = KijijiScraper(
-            DB, MODEL_PATH, MAX_PRICE, FOLDER, PROB_THRESH, NUM_ADS
+            DB_NAME, MODEL_PATH, MAX_PRICE, FOLDER, PROB_THRESH, NUM_ADS
             )
         notifs = scraper.scrape_ads(URL, browser_dict)
         for ad_id, ad_price in notifs:

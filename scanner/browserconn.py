@@ -11,36 +11,39 @@ import time
 
 class BrowserConnection:
     """
-    Object that interacts with web browser using Selenium.
+    Web browser object that interacts with Kijiji website using Selenium.
+
+    timeout - int: Maximum allotted time for Selenium methods before
+            raising TimeoutException
+    wait - int: Amount of time (in seconds) BrowserConnection waits between
+            attempting to find elements.
+    driver - selenium.webdriver.WebDriver: The browser used to interact
+            with Kijiji
+    ignored_exceptions - tuple of Exceptions: Exceptions that are to be
+            ignored when searching for a WebElement.
+    by - dict[str: selenium.webdriver.common.by]: Dictionary of keys that
+            represent Selenium locator methods, and corresponding values
+            that are the methods of location.
+    ads_loc - str: pattern used by find_element_by_class_name to search
+            for the WebElements containing the ads on the main results page to
+            click on.
+    id_loc - str: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad id.
+    price_loc - str: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad price.
+    gallery_loc - str: pattern used by find_element_by_xpath to search for a
+            WebElement containing the ad gallery.
+    images_loc - str: pattern used by find_element_by_css_selector to search
+            for the WebElements containing the ad images.
     """
     def __init__(self, driver_loc, timeout, headless=True):
         """
         Initializes BrowserConnection object.
 
         driver_loc - str: Path to webdriver.
-        timeout - int: Maximum allotted time for Selenium methods before
-            raising TimeoutException
-        wait - int: Amount of time BrowserConnection waits between attempting
-            to find elements.
         headless - bool: Whether the browser should be headless or not.
-        driver - selenium.webdriver.WebDriver: The browser used to interact
-            with Kijiji
-        ignored_exceptions - tuple of Exceptions: Exceptions that are to be
-            ignored when searching for a WebElement.
-        by - dict: Dictionary of keys (str) that represent Selenium locator
-            methods, and corresponding values (selenium.webdriver.common.by)
-            that are the methods of location.
-        ads_loc - str: pattern used by find_element_by_class_name to search
-            for the WebElements containing the ads on the main results page to
-            click on.
-        id_loc - str: pattern used by find_element_by_xpath to search for a
-            WebElement containing the ad id.
-        price_loc - str: pattern used by find_element_by_xpath to search for a
-            WebElement containing the ad price.
-        gallery_loc: pattern used by find_element_by_xpath to search for a
-            WebElement containing the ad gallery.
-        gallery_loc: pattern used by find_element_by_css_selector to search for
-            the WebElements containing the ad images.
+        timeout - int: Maximum allotted time for Selenium methods before
+                raising TimeoutException.
         """
         if headless:
             options = Options()
@@ -180,9 +183,9 @@ class BrowserConnection:
         function ignores exceptions found in <self.ignored_exceptions>.
 
         by - str: Must be one of the keys found in self.by. Denotes the
-            Selenium method of location.
+                Selenium method of location.
         loc - str: The pattern used by the locator to locate the WebElement of
-            interest.
+                interest.
         returns Selenium.webdriver.WebElement
         """
         if singular:
