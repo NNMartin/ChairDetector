@@ -1,12 +1,14 @@
-from train_detector.training import best_cv_training
-import torch
-from train_detector.cnn_model import get_model
 import warnings
 
+
 class ArgsDict(dict):
+    """
+    Object used to store training specifications for the neural net.
+    """
     def __init__(self, *args, **kwargs):
         super(ArgsDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
@@ -15,7 +17,7 @@ if __name__ == "__main__":
         "gpu": True,
         "model_link": "resnext101_32x8d",
         "epochs": 30,
-        "folder": "data/",
+        "folder": "detector/data/",
         "dimensions": 224,
         "batch_size": 16,
         "num_workers": 4,
@@ -27,6 +29,6 @@ if __name__ == "__main__":
         "save_as": "og_model.pt"
         }
     args.update(args_dict)
-    #model, acc = best_cv_training(args)
-    #print('Best Accuracy:', acc)
-    #torch.save(model, args.save_as)
+    # model, acc = best_cv_training(args)
+    # print('Best Accuracy:', acc)
+    # torch.save(model, args.save_as)

@@ -1,10 +1,11 @@
 from datetime import datetime
 import classify
 import chair_sqlite
-import browserconn
+from browserconn import BrowserConnection
+import sqlite3
 
 
-class KijijiAd(dict):
+class KijijiAd:
     """
     Object that represents a Kijiji Ad.
 
@@ -23,7 +24,8 @@ class KijijiAd(dict):
             downloaded ads. This string is formatted to make insertion into the
             database convenient.
     """
-    def __init__(self, id, time, probs, price, names, *args, **kwargs):
+    def __init__(self, id: int, time: str, probs: list[float], price: float,
+                 names: list[str], *args, **kwargs):
         super(KijijiAd, self).__init__(*args, **kwargs)
         self.__dict__ = self
         self.id = id
@@ -39,19 +41,19 @@ class KijijiAd(dict):
         a particular item are greater than or equal to <threshold>.
         Returns False otherwise.
 
-        threshold - float (0 < threshold < 1): Probability threshold to
+        :param threshold: Probability threshold to
                 classify an image as a particular item.
-        returns bool
+        :return: bool
         """
         return max(self.probs) >= threshold
 
-    def get_ith_value_dict(self, i):
+    def get_ith_value_dict(self, i: int):
         """
         Given an index <i>, returns a dictionary of ad attributes corresponding
         to the <i>th image.
 
-        i - int (>0): Index of image in image gallery of ad.
-        returns dict
+        :param i: Index of image in image gallery of ad.
+        :return: dict
         """
         return {
             "id": self.id,
@@ -61,13 +63,13 @@ class KijijiAd(dict):
             "filename": self.names[i]
             }
 
-    def insert_into_db(self, db_conn):
+    def insert_into_db(self, db_conn: tuple[sqlite3.Cursor, sqlite3.Connection]):
         """
         Inserts ad into the database associated to the (cursor, connection)
         object <db_conn>.
 
-        db_conn - (sqlite3.Cursor, sqlite3.Connection): Database object
-        returns None
+        :param db_conn: Database object
+        :return: None
         """
         for i in range(len(self.names)):
             item_dict = self.get_ith_value_dict(i)
@@ -93,16 +95,17 @@ class KijijiScraper:
     thresh - float (0 < threshold < 1): Probability threshold to
             classify an image as a particular item.
     """
-    def __init__(self, db_name, model_path, max_price, folder, thresh, num_ads):
+    def __init__(self, db_name: str, model_path: str, max_price: float,
+                 folder: str, thresh: float, num_ads: int):
         """
-        db_name - str: Local path of database used to store scraped ad data.
-        model_path - str: Global path of model used to classify ads.
-        max_price - float: The maximum price that will be considered when
+        :param db_name: Local path of database used to store scraped ad data.
+        :param model_path: Global path of model used to classify ads.
+        :param max_price: The maximum price that will be considered when
                 notifying a user about a potential ad.
-        folder - str: Global path of folder to store downloaded images.
-        thresh - float (0 < threshold < 1): Probability threshold to
+        :param folder: Global path of folder to store downloaded images.
+        :param thresh: Probability threshold to
                 classify an image as a particular item.
-        num_ads - int (>0): The maximum number of ads to scrape.
+        :param num_ads: The maximum number of ads to scrape.
         """
         assert num_ads < 47, "Currently the number of ads is capped at 46."
         self.db = chair_sqlite.open_conn(db_name=db_name)
@@ -114,32 +117,33 @@ class KijijiScraper:
         self.thresh = thresh
 
     @staticmethod
-    def init_browser_conn(driver_loc, timeout):
+    def init_browser_conn(driver_loc: str, timeout: int):
         """
         Initializes BrowserConnection object with the webdriver location.
 
-        driver_loc - str: Path to webdriver.
-        timeout - int: Maximum allotted time for Selenium methods before
+        :param driver_loc: Path to webdriver.
+        :param timeout: Maximum allotted time for Selenium methods before
                 raising TimeoutException.
-        returns None
+        :return: BrowserConnection
         """
-        return browserconn.BrowserConnection(driver_loc, timeout)
+        return BrowserConnection(driver_loc, timeout)
 
-    def new_id(self, ad_id):
-        """ Returns True if <ad_id> is not in the database under the variable
-            "id", and False otherwise.
+    def new_id(self, ad_id: int):
+        """
+        Returns True if <ad_id> is not in the database under the variable
+        "id", and False otherwise.
 
-        ad_id - int: Unique identifier of an ad.
-        returns bool
+        :param ad_id: Unique numeric identifier of an ad.
+        :return: bool
         """
         return not chair_sqlite.is_in_db(self.db, ad_id, "id")
 
-    def insert_into_db(self, ad):
+    def insert_into_db(self, ad: KijijiAd):
         """
         Inserts <ad> into database.
 
-        ad - KijijiAd: Ad to be inserted into database.
-        returns None
+        :param ad: Ad to be inserted into database.
+        :return: None
         """
         ad.insert_into_db(self.db)
 
@@ -147,33 +151,33 @@ class KijijiScraper:
         """
         Closes the database connection.
 
-        returns None
+        :return: None
         """
         chair_sqlite.close_conn(self.db)
 
     @staticmethod
-    def _quit_browser(conn):
+    def _quit_browser(conn: BrowserConnection):
         """
         Quits the browser connection.
 
-        conn - BrowserConnection: Web browser object that interacts with Kijiji
+        :param conn: Web browser object that interacts with Kijiji
                 website using Selenium.
-        returns None
+        :return: None
         """
         conn.quit_conn()
 
-    def scrape_images(self, conn, time):
+    def scrape_images(self, conn: BrowserConnection, time: str):
         """
         Given a BrowserConnection <conn> located at an ad image gallery,
         download the images; including the <time> of download in their filename.
         Return the names of downloaded images and their classification
         probabilities.
 
-        conn - BrowserConnection: Web browser object that interacts with Kijiji
+        :param conn: Web browser object that interacts with Kijiji
                 website using Selenium.
-        time - str: The date (Y/M/D and H/M/S) the ad was identified and added
+        :param time: The date (Y/M/D and H/M/S) the ad was identified and added
                 to a local database.
-        returns tuple(list[str], list[float])
+        :return: tuple[list[str], list[float]]
         """
         images = conn.get_images()
         names, predictions = [], []
@@ -183,7 +187,7 @@ class KijijiScraper:
             predictions.append(classify.hm_prob(image, name, self.model))
         return names, predictions
 
-    def scrape_ad(self, conn):
+    def scrape_ad(self, conn: BrowserConnection):
         """
         Scrapes the data of a particular ad corresponding to the web browser
         <conn> and stores in a database, self.db.
@@ -199,9 +203,9 @@ class KijijiScraper:
         appended to self.notifs. Afterwards, the web browser goes back to the
         previous page containing all ads.
 
-        conn - BrowserConnection: Web browser object that interacts with Kijiji
+        :param conn: Web browser object that interacts with Kijiji
                 website using Selenium.
-        returns None
+        :return: None
         """
         ad_dict = {"id": conn.get_id()}
         if ad_dict["id"] is None or not self.new_id(ad_dict["id"]):
@@ -221,17 +225,17 @@ class KijijiScraper:
             self.insert_into_db(ad)
         conn.go_back_n_pages()
 
-    def scrape_ads(self, url, browser_dict):
+    def scrape_ads(self, url: str, browser_dict: dict):
         """
         Given a <url> link and a dictionary of paramaters, <browser_dict>,
         needed to initialize a BrowserConnection, return a list of ads whose
         prices are below or equal to self.max_price and have a probability
         greater than or equal to self.thresh of containing a particular item.
 
-        url - str: Url link to a Kijiji website page of ads to scrape.
-        browser_dict - dict: Dictionary of keys and values needed to initialize
-        a BrowserConnection.
-        returns List[(int, float)]
+        :param url: Url link to a Kijiji website page of ads to scrape.
+        :param browser_dict: Dictionary of keys and values needed to initialize
+                a BrowserConnection.
+        :return: List[tuple[int, float]]
         """
         conn = KijijiScraper.init_browser_conn(**browser_dict)
         conn.get_url(url)
@@ -249,6 +253,6 @@ class KijijiScraper:
         """
         Returns current date and time.
 
-        returns str
+        :return: str
         """
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -1,12 +1,13 @@
 import sqlite3 as sql
-import pandas as pd
+from pandas import DataFrame
 
 
-def sqlfstr(s):
-    """Returns the string <s> as string format used for SQL parameter input.
+def sqlfstr(s: str):
+    """
+    Returns the string <s> as string format used for SQL parameter input.
 
-    s: str
-    returns: str
+    :param s: String to reformat.
+    :return: str
     """
     return s.replace('"', '""')
 
@@ -16,21 +17,21 @@ def open_conn(db_name="chairs.db"):
     Opens connection to the database <db_name>. Returns a cursor object and
     connection object so that interactions with the database can occur.
 
-    db_name: str
-    returns: (sqlite3.Cursor, sqlite3.Connection)
+    :param db_name: Name of database.
+    :return: tuple[sqlite3.Cursor, sqlite3.Connection]
     """
     conn = sql.connect(db_name)
     c = conn.cursor()
     return c, conn
 
 
-def close_conn(db_conn):
+def close_conn(db_conn: tuple[sql.Cursor, sql.Connection]):
     """
     Closes the connection to the database with cursor and connection objects
-    db_conn
+    <db_conn>.
 
-    db_conn: (sqlite3.Cursor, sqlite3.Connection)
-    returns: None
+    :param db_conn: Cursor and connection to database.
+    :return: None
     """
     c, conn = db_conn
     conn.close()
@@ -40,9 +41,9 @@ def init_db(db="chairs.db", table_name="chairs"):
     """
     Initializes database with name <db> and table <table_name>.
 
-    db: str
-    table_name: str
-    returns: None
+    :param db: Name of database.
+    :param table_name: Name of table in database.
+    :return: None
     """
     c, conn = open_conn(db_name=db)
     c.execute("""CREATE TABLE {table}(
@@ -56,15 +57,17 @@ def init_db(db="chairs.db", table_name="chairs"):
     conn.close()
 
 
-def insert(db_conn, item_dict, item_names, table="chairs"):
+def insert(db_conn: tuple[sql.Cursor, sql.Connection], item_dict: dict,
+           item_names: str, table="chairs"):
     """
     Inserts <item_dict> into the <table> corresponding to the <db_conn>
     database. <item_names> are the column names of <table>.
 
-    db_conn: (sqlite3.Cursor, sqlite3.Connection)
-    item_dict: dict whose keys match <item_names>
-    item_names: str in format "(:item1, :item2, ..., item:n)"
-    returns: None
+    :param db_conn: Cursor and connection to database.
+    :param item_dict: Dictionary whose keys match <item_names>.
+    :param item_names: String in format "(:item1, :item2, ..., item:n)"
+    :param table: Name of table in database
+    :return: None
     """
     c, conn = db_conn
     with conn:
@@ -75,16 +78,18 @@ def insert(db_conn, item_dict, item_names, table="chairs"):
             )
 
 
-def is_in_db(db_conn, item, var, table="chairs"):
+def is_in_db(db_conn: tuple[sql.Cursor, sql.Connection], item, var: str,
+             table="chairs"):
     """
     Returns True if observation <item> belonging to variable <var> is in the
     database with (cursor, connection) <db_conn> and table <table>, returns
     False otherwise.
 
-    db_conn: (sqlite3.Cursor, sqlite3.Connection)
-    item: dtype(var)
-    var: str
-    returns: bool
+    :param db_conn: Cursor and connection to database.
+    :param item: Item to check if in database.
+    :param var: Variable that <item> corresponds to.
+    :param table: Name of table in database.
+    :return: bool
     """
     c, _ = db_conn
     c.execute(
@@ -97,17 +102,17 @@ def is_in_db(db_conn, item, var, table="chairs"):
     return result is not None
 
 
-def table_to_df(col_names, table="chairs"):
+def table_to_df(col_names: list[str], table="chairs"):
     """
     Given the column names <col_names> associated to the database table
     <table>, returns a pandas DataFrame of the table.
 
-    col_names: list(str)
-    table: str
-    returns: pandas.DataFrame
+    :param col_names: Names of columns in <table>
+    :param table: Name of database table.
+    :return: DataFrame
     """
     c, conn = open_conn()
     with conn:
         data = c.execute(" SELECT * FROM {table}".format(table=sqlfstr(table)))
-        data = pd.DataFrame(data.fetchall(), columns=col_names)
+        data = DataFrame(data.fetchall(), columns=col_names)
     return data

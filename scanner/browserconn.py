@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException
@@ -36,14 +37,15 @@ class BrowserConnection:
     images_loc - str: pattern used by find_element_by_css_selector to search
             for the WebElements containing the ad images.
     """
-    def __init__(self, driver_loc, timeout, headless=True):
+
+    def __init__(self, driver_loc: str, timeout: int, headless=True):
         """
         Initializes BrowserConnection object.
 
-        driver_loc - str: Path to webdriver.
-        headless - bool: Whether the browser should be headless or not.
-        timeout - int: Maximum allotted time for Selenium methods before
-                raising TimeoutException.
+        :param driver_loc: Path to webdriver.
+        :param timeout: Maximum allotted time for Selenium methods before
+                    raising TimeoutException.
+        :param headless: Whether the browser should be headless or not.
         """
         if headless:
             options = Options()
@@ -72,8 +74,8 @@ class BrowserConnection:
         """
         Webdriver goes back <n> pages.
 
-        n - int: The number of pages the browser goes back in history.
-        returns None
+        :param n: The number of pages the browser goes back in history.
+        :return: None
         """
         assert isinstance(n, int) and n > 0, "n must be a positive integer"
         self.driver.execute_script("window.history.go(-{})".format(n))
@@ -82,17 +84,17 @@ class BrowserConnection:
         """
         Returns the current url of the browser.
 
-        returns str
+        :return: str
         """
         return self.driver.current_url
 
-    def get_url(self, url):
+    def get_url(self, url: str):
         """
         Selenium webdriver retrieves the <url> and implicitly waits for the
         page to load.
 
-        url - str: website url for the browser to retrieve.
-        returns None
+        :param url: Website url for the browser to go to.
+        :return: None
         """
         self.driver.get(url)
         self.driver.implicitly_wait(self.timeout)
@@ -101,12 +103,12 @@ class BrowserConnection:
         """
         Quits the browser connection and deletes all cookies.
 
-        returns None
+        :return: None
         """
         self.driver.delete_all_cookies()
         self.driver.quit()
 
-    def get_ith_ad(self, num_ads, ind):
+    def get_ith_ad(self, num_ads: int, ind: int):
         """
         Waits for the webdriver to find at least <num_ads> ads and then
         returns the ad located at the index <ind>. At the time of writing
@@ -114,9 +116,9 @@ class BrowserConnection:
         occurrence of a locator and so an entire list of all elements matching
         the locator must be found on each call.
 
-        num_ads - int (>0): Number of ads to scrape.
-        ind - int (>0): Index of a particular ad to scrape.
-        returns Selenium.webdriver.WebElement
+        :param num_ads: Number of ads to scrape.
+        :param ind: Index of a particular ad to scrape.
+        :return: WebElement
         """
         total = 0
         ads = self.driver.find_elements_by_class_name(self.ads_loc)
@@ -134,7 +136,7 @@ class BrowserConnection:
         search if the price exists. If the price cannot be located or is not a
         number, returns None.
 
-        returns None or float
+        :return: None or float
         """
         try:
             price_element = self.wait_for_page(self.price_loc, "xpath")
@@ -143,14 +145,14 @@ class BrowserConnection:
         web_price = price_element.get_attribute("content")
         return None if web_price is None else float(web_price.replace("$", ""))
 
-    def click_ad(self, ad_element):
+    def click_ad(self, ad_element: WebElement):
         """
         Waits for browser until <ad_element> is enabled and then clicks on the
         element. Returns True if the <ad_element> is not a stale web element
         and False otherwise.
 
-        ad_element - Selenium.webdriver.WebElement: Element to be clicked.
-        returns - bool
+        :param ad_element: Web element ad to be clicked.
+        :return: bool
         """
         total = 0
         try:
@@ -170,23 +172,25 @@ class BrowserConnection:
         webdriver is on. The images in the gallery can then be scraped using
         additional functions.
 
-        returns None
+        :return: None
         """
         gallery = self.wait_for_page(self.gallery_loc, "xpath")
         gallery.click()
 
-    def wait_for_page(self, loc, by, singular=True):
+    def wait_for_page(self, loc: str, by: str, singular=True):
         """
-        Returns the selenium.webdriver.WebElement found at the location <loc>
+        Returns the WebElement found at the location <loc>
         using the key <by> associated to one of the methods found in
         selenium.webdriver.common.by. When searching for the WebElement, the
         function ignores exceptions found in <self.ignored_exceptions>.
 
-        by - str: Must be one of the keys found in self.by. Denotes the
-                Selenium method of location.
-        loc - str: The pattern used by the locator to locate the WebElement of
+        :param loc: The pattern used by the locator to locate the WebElement of
                 interest.
-        returns Selenium.webdriver.WebElement
+        :param by: Must be one of the keys found in self.by. Denotes the
+                Selenium method of location.
+        :param singular: True if searching for a single element, False
+                otherwise.
+        :return: WebElement
         """
         if singular:
             locator = ec.presence_of_element_located
@@ -202,9 +206,9 @@ class BrowserConnection:
         """
         Returns the ad id found by the pattern, self.id_loc, by an xpath
         search. If the id cannot be found in a duration of time less than
-        self.timeout then returns None
+        self.timeout then returns None.
 
-        returns None or int
+        :return: None or int
         """
         try:
             ad_id = self.wait_for_page(self.id_loc, "xpath")
@@ -217,7 +221,7 @@ class BrowserConnection:
         Returns a generator of WebElements representing an ad's images. If
         an Exception is raised, the generator returned is empty.
 
-        returns generator of WebElements
+        :return: generator of WebElement
         """
         try:
             self.click_gallery()
