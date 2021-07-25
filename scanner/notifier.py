@@ -20,19 +20,19 @@ PROB_THRESH = 0.7
 TIMEOUT = 30  # seconds
 
 
-def notify(repeat, wait=300):
+def notify(repeat: int, wait=300):
     """
-    Calls the scrape_ads method from KijijiScraper <repeat> number of times.On
+    Calls the scrape_ads method from KijijiScraper <repeat> number of times. On
     each call, desktop notifications are sent for all Kijiji ads that
     satisfy the desired price and Herman Miller probability thresholds declared
     in the file constants. i.e, ads whose probability of being a Herman Miller
     are greater than or equal to PROB_THRESH and whose listed price is less
     than or equal to MAX_PRICE.
 
-    repeat - int (>0):
-    wait - int (>0): The amount of time in seconds to wait between calls of
+    :param repeat: The number of times to scrape Kijiji consecutively.
+    :param wait: The amount of time in seconds to wait between calls of
             scrape_ads.
-    returns None
+    :return: None
     """
     browser_dict = {"driver_loc": DRIVER_LOC, "timeout": TIMEOUT}
     unique_ids = set()

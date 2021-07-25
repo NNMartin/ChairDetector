@@ -3,6 +3,7 @@ import classify
 import chair_sqlite
 from browserconn import BrowserConnection
 import sqlite3
+from typing import List, Tuple
 
 
 class KijijiAd:
@@ -19,15 +20,13 @@ class KijijiAd:
             classification.
     names - list[str]: List of the downloaded global paths of each image in the
             ad gallery.
-    price - float: The price in CAD of an ad.
+    price - float: The price of an ad.
     var_names - str: String of variable names used in the database containing
             downloaded ads. This string is formatted to make insertion into the
             database convenient.
     """
-    def __init__(self, id: int, time: str, probs: list[float], price: float,
-                 names: list[str], *args, **kwargs):
-        super(KijijiAd, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+    def __init__(self, id: int, time: str, probs: List[float], price: float,
+                 names: List[str]):
         self.id = id
         self.time = time
         self.probs = probs
@@ -63,7 +62,7 @@ class KijijiAd:
             "filename": self.names[i]
             }
 
-    def insert_into_db(self, db_conn: tuple[sqlite3.Cursor, sqlite3.Connection]):
+    def insert_into_db(self, db_conn: Tuple[sqlite3.Cursor, sqlite3.Connection]):
         """
         Inserts ad into the database associated to the (cursor, connection)
         object <db_conn>.

@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix
 import numpy as np
 import time
 from torch.utils.data import DataLoader
+from typing import Tuple
 
 
 def best_cv_training(args: dict):
@@ -57,7 +58,7 @@ def get_con_stats(true_pred: dict):
 
 
 def print_training_update(epoch: int, duration: float, lr_index: int,
-                          losses: tuple[float], true_pred: dict,
+                          losses: Tuple[float], true_pred: dict,
                           period=0):
     """
     Prints epoch training metrics.
@@ -130,7 +131,7 @@ def training_metric(true_pred: dict, last_percentile=0.9, metric="acc"):
             )
 
 
-def train(args: dict, lr_index: int, dataloaders: tuple[DataLoader]):
+def train(args: dict, lr_index: int, dataloaders: Tuple[DataLoader]):
     """
     Trains a neural network using the training specifications in <args> which
     are detailed in main.py. The neural net is trained at the learning rate
@@ -138,7 +139,7 @@ def train(args: dict, lr_index: int, dataloaders: tuple[DataLoader]):
 
     :param args: Dictionary of training specifications detailed in main.py.
     :param lr_index: Index of current learning rate in hyperparameter space.
-    :param dataloaders: Tuple of training, validation dataloaders.
+    :param dataloaders: Tuple of training, validation DataLoaders.
     :return: torch.Module, float, float, float
     """
     train_dataloader, val_dataloader = dataloaders
@@ -180,7 +181,7 @@ def train(args: dict, lr_index: int, dataloaders: tuple[DataLoader]):
         )
 
 
-def train_epoch(model: torch.Module, loss_criterion: nn.CrossEntropyLoss,
+def train_epoch(model, loss_criterion: nn.CrossEntropyLoss,
                 optimizer: torch.optim.AdamW, train_dataloader: DataLoader,
                 device: torch.device):
     """
@@ -206,7 +207,8 @@ def train_epoch(model: torch.Module, loss_criterion: nn.CrossEntropyLoss,
     return np.mean(losses)
 
 
-def val_epoch(model, loss_criterion, val_dataloader, device):
+def val_epoch(model, loss_criterion: nn.CrossEntropyLoss,
+              val_dataloader: DataLoader, device: torch.device):
     """
     Returns validation loss of neural network <model> as well as
     dictionary of true labels and predicted labels.

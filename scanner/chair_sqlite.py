@@ -1,5 +1,6 @@
 import sqlite3 as sql
 from pandas import DataFrame
+from typing import List, Tuple
 
 
 def sqlfstr(s: str):
@@ -18,19 +19,20 @@ def open_conn(db_name="chairs.db"):
     connection object so that interactions with the database can occur.
 
     :param db_name: Name of database.
-    :return: tuple[sqlite3.Cursor, sqlite3.Connection]
+    :return: Tuple[sqlite3.Cursor, sqlite3.Connection]
     """
     conn = sql.connect(db_name)
     c = conn.cursor()
     return c, conn
 
 
-def close_conn(db_conn: tuple[sql.Cursor, sql.Connection]):
+def close_conn(db_conn: Tuple[sql.Cursor, sql.Connection]):
     """
     Closes the connection to the database with cursor and connection objects
     <db_conn>.
 
-    :param db_conn: Cursor and connection to database.
+    :param db_conn: Cursor and connection to
+            database.
     :return: None
     """
     c, conn = db_conn
@@ -57,13 +59,14 @@ def init_db(db="chairs.db", table_name="chairs"):
     conn.close()
 
 
-def insert(db_conn: tuple[sql.Cursor, sql.Connection], item_dict: dict,
+def insert(db_conn: Tuple[sql.Cursor, sql.Connection], item_dict: dict,
            item_names: str, table="chairs"):
     """
     Inserts <item_dict> into the <table> corresponding to the <db_conn>
     database. <item_names> are the column names of <table>.
 
-    :param db_conn: Cursor and connection to database.
+    :param db_conn: Cursor and connection to
+            database.
     :param item_dict: Dictionary whose keys match <item_names>.
     :param item_names: String in format "(:item1, :item2, ..., item:n)"
     :param table: Name of table in database
@@ -78,14 +81,15 @@ def insert(db_conn: tuple[sql.Cursor, sql.Connection], item_dict: dict,
             )
 
 
-def is_in_db(db_conn: tuple[sql.Cursor, sql.Connection], item, var: str,
+def is_in_db(db_conn: Tuple[sql.Cursor, sql.Connection], item: any, var: str,
              table="chairs"):
     """
     Returns True if observation <item> belonging to variable <var> is in the
     database with (cursor, connection) <db_conn> and table <table>, returns
     False otherwise.
 
-    :param db_conn: Cursor and connection to database.
+    :param db_conn: [sql.Cursor, sql.Connection] Cursor and connection to
+            database.
     :param item: Item to check if in database.
     :param var: Variable that <item> corresponds to.
     :param table: Name of table in database.
@@ -102,7 +106,7 @@ def is_in_db(db_conn: tuple[sql.Cursor, sql.Connection], item, var: str,
     return result is not None
 
 
-def table_to_df(col_names: list[str], table="chairs"):
+def table_to_df(col_names: List[str], table="chairs"):
     """
     Given the column names <col_names> associated to the database table
     <table>, returns a pandas DataFrame of the table.

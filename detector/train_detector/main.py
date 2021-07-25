@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "dimensions": 224,
         "batch_size": 16,
         "num_workers": 4,
-        "s": 5,
+        "s": 5,  # should be size of learning_rates
         "learning_rates": [5e-4, 1e-4, 5e-5, 1e-5, 5e-6],
         "label_weights": None,
         "seed": 6802,

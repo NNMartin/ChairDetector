@@ -3,6 +3,7 @@ from torchvision import transforms
 from torch.nn.functional import softmax
 from PIL import Image
 from urllib.request import urlopen
+from torch.nn import Module
 from selenium.webdriver.remote.webelement import WebElement
 
 
@@ -12,7 +13,7 @@ def init_model(model_path: str):
     evaluation mode.
 
     :param model_path: Global path to PyTorch model.
-    :return: torch.Module
+    :return: Module
     """
     model = torch.load(model_path, map_location=torch.device('cpu'))
     model.eval()
@@ -40,7 +41,7 @@ def process_image(image: Image):
     return preprocess(image).unsqueeze(0)
 
 
-def get_prob(model: torch.Module, image: Image):
+def get_prob(model: Module, image: Image):
     """
     Returns the probability of <image>, calculated by the neural net <model>.
     The category of interest is assumed to be the first index of model output.
@@ -54,7 +55,7 @@ def get_prob(model: torch.Module, image: Image):
     return softmax(output[0], dim=0)[0].item()
 
 
-def hm_prob(image: WebElement, image_name: str, model: torch.Module):
+def hm_prob(image: WebElement, image_name: str, model: Module):
     """
     Downloads the image <image> with the global path name <image_name> and
     returns the probability of that image being a particular item, as
