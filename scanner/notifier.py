@@ -6,7 +6,7 @@ import time
 URL = ("https://www.kijiji.ca/b-chair-recliner/city-of-toronto/c245l170"
        "0273?ad=offering"
        )
-FOLDER = "scanner/raw_data"
+FOLDER = "scanner/data"
 MODEL_PATH = "detector/model.pt"
 DB_NAME = "scanner/chairs.db"
 NUM_ADS = 10  # less than 47
@@ -47,6 +47,3 @@ def notify():
 
 if __name__ == '__main__':
     notify()
-
-
-
