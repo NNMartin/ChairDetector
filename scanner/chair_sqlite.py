@@ -39,7 +39,7 @@ def close_conn(db_conn: Tuple[sql.Cursor, sql.Connection]):
     conn.close()
 
 
-def init_db(db="chairs.db", table_name="chairs"):
+def init_db(db="scanner/chairs.db", table_name="chairs"):
     """
     Initializes database with name <db> and table <table_name>.
 
@@ -120,3 +120,5 @@ def table_to_df(col_names: List[str], table="chairs"):
         data = c.execute(" SELECT * FROM {table}".format(table=sqlfstr(table)))
         data = DataFrame(data.fetchall(), columns=col_names)
     return data
+
+init_db()
