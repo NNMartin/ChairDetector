@@ -13,7 +13,7 @@ def sqlfstr(s: str):
     return s.replace('"', '""')
 
 
-def open_conn(db_name="chairs.db"):
+def open_conn(db_name="scanner/chairs.db"):
     """
     Opens connection to the database <db_name>. Returns a cursor object and
     connection object so that interactions with the database can occur.
@@ -120,5 +120,3 @@ def table_to_df(col_names: List[str], table="chairs"):
         data = c.execute(" SELECT * FROM {table}".format(table=sqlfstr(table)))
         data = DataFrame(data.fetchall(), columns=col_names)
     return data
-
-init_db()
