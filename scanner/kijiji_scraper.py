@@ -181,9 +181,13 @@ class KijijiScraper:
         images = conn.get_images()
         names, predictions = [], []
         for i, image in enumerate(images):
-            name = "{}/{}_{}.png".format(self.folder, time, str(i))
+            name = "{}_{}.png".format(time, str(i))
+            predictions.append(
+                classify.hm_prob(
+                    image, "{}/{}".format(self.folder, name), self.model
+                    )
+                )
             names.append(name)
-            predictions.append(classify.hm_prob(image, name, self.model))
         return names, predictions
 
     def scrape_ad(self, conn: BrowserConnection):

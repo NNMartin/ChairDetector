@@ -1,4 +1,6 @@
 import warnings
+from detector.train_detector.training import best_cv_training
+import torch
 
 
 class ArgsDict(dict):
@@ -10,6 +12,13 @@ class ArgsDict(dict):
         self.__dict__ = self
 
 
+def train(args: dict, save=False):
+    model, acc = best_cv_training(args)
+    if save:
+        torch.save(model, args.save_as)
+    print('Best Accuracy:', acc)
+
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     args = ArgsDict()
@@ -17,7 +26,7 @@ if __name__ == "__main__":
         "gpu": True,
         "model_link": "resnext101_32x8d",
         "epochs": 30,
-        "folder": "detector/data/",
+        "folder": "detector/new_data/",
         "dimensions": 224,
         "batch_size": 16,
         "num_workers": 4,
@@ -29,6 +38,3 @@ if __name__ == "__main__":
         "save_as": "og_model.pt"
         }
     args.update(args_dict)
-    # model, acc = best_cv_training(args)
-    # print('Best Accuracy:', acc)
-    # torch.save(model, args.save_as)
