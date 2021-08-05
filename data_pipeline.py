@@ -6,6 +6,8 @@ from typing import List
 
 def sort_raw_data(old_dir: str, new_dir: str, model_path: str, delta=0.2):
     """
+    Moves image data from old directory to a new directory and sorts the data
+    based off of the image classification of a neural network model.
 
     :param old_dir: Path to directory containing raw data.
     :param new_dir: Path to directory containing sorted data.
@@ -47,6 +49,7 @@ def move_files(files: List[str], old_dir: str, new_dir: str):
 
 def move_data(old_dir: str, new_dir: str):
     """
+    Moves files from old directory to a new directory.
 
     :param old_dir: Path to directory that files are currently located in.
     :param new_dir: Path to directory that files are to be moved to.
